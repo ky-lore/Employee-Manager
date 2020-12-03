@@ -64,14 +64,54 @@ const addEmployee = () => {
         message: "Choose the employee's department",
         choices: ['Sales', 'Engineering', 'Finance', 'Legal']
       },
+      {
+        type: 'input',
+        name: 'roleId',
+        message: "Please input the employee's role ID"
+      },
+      {
+        type: 'list',
+        name: 'empManager',
+        message: "Choose the employee's manager (if applicable)",
+        choices: [managerArr[0].lastName, managerArr[1].lastName, managerArr[2].lastName, managerArr[3].lastName, 'None']
+      }
     ])
     .then(data => {
+      let mgrId
+      let deptId
 
+      switch(data.department) {
+        case 'Sales':
+          deptId = 1
+          break
+        case 'Engineering':
+          deptId = 2
+          break
+        case 'Finance':
+          deptId = 3
+          break
+        case 'Legal':
+          deptId = 4
+          break
+      }
+
+      if(data.empManager !== 'None') {
+
+        for(i = 0; i < managerArr.length; i++) {
+          if(managerArr[i].lastName === data.empManager) {
+            mgrId = managerArr[i].id
+          }
+        }
+
+        console.log(`'${ data.firstName }', '${ data.lastName }', ${ data.roleId }, ${ mgrId }`)
+
+        db.query(`INSERT INTO employees (firstName, lastName, roleId, managerId)
+                  VALUES ('${data.firstName}', '${data.lastName}', ${data.roleId}, ${mgrId})`)
+      }
+      
     })
     .catch(err => console.log(err))
 }
-
-//menu()
 
 let managerArr = []
 
@@ -79,9 +119,12 @@ const getManagers = () => {
   db.query('SELECT * FROM employees WHERE managerId IS NULL', (err, managers) => {
     if (err) { console.log(err) }
     managers.forEach(manager => {
-      console.log(manager)
+      managerArr.push(manager)
     })
   })
 }
 
 getManagers()
+
+menu()
+
